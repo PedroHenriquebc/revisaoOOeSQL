@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 
 import db.DB;
 import entities.Order;
@@ -21,12 +23,23 @@ public class Program {
 		ResultSet rs = st.executeQuery("SELECT * FROM tb_order "
 				+ "INNER JOIN tb_order_product ON tb_order.id = tb_order_product.order_id "
 				+ "INNER JOIN tb_product ON tb_product.id = tb_order_product.product_id");
-			
+		
+		Map<Long, Order> orders = new HashMap<>();
+		Map<Long, Product> prods = new HashMap<>();	
 		while (rs.next()) {
+			Long orderId = rs.getLong("order_id");
+			if(orders.get(orderId) == null) {
+				Order order = instantiateOrder(rs);
+				orders.put(orderId, order);
+			}
 			
-			Order order = instantiateOrder(rs);
+			Long productId = rs.getLong("product_id");
+			if(prods.get(productId) == null) {
+				Product product = instantiateProduct(rs);
+				prods.put(productId, product);
+			}
 			
-			System.out.println(order);
+			orders.get(orderId).getProducts().add(prods.get(productId));
 		}
 	}
 	
